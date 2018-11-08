@@ -4,7 +4,7 @@
 
 /*
  * Synchronization is implemented using the parameter_port_lock() and
- * parameter_port_unlock() macros provided in the parameter_port.h.
+ * parameter_port_unlock() functions provided in the parameter_port.h.
  * Synchronization is required in the following places:
  *  - linked-list head pointer of the parameter list in a namespace
  *  - linked-list head pointer of the sub-namespace list in a namespace

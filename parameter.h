@@ -65,7 +65,9 @@ struct parameter_s {
 extern "C" {
 #endif
 
-
+/** Creates a new namespace
+ * parent and id parameters can be NULL for the root namespace
+ */
 void parameter_namespace_declare(parameter_namespace_t *ns,
                                  parameter_namespace_t *parent,
                                  const char *id);
