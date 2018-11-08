@@ -1,6 +1,8 @@
 #ifndef PARAMETER_PORT_H
 #define PARAMETER_PORT_H
 
+#include <stddef.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
