@@ -413,7 +413,7 @@ int parameter_msgpack_read(parameter_namespace_t *ns,
 }
 
 
-static void parameter_msgpack_write_subtree(const parameter_namespace_t *ns,
+static int parameter_msgpack_write_subtree(const parameter_namespace_t *ns,
                                             cmp_ctx_t *cmp,
                                             parameter_msgpack_err_cb err_cb,
                                             void *err_arg)
@@ -423,7 +423,7 @@ static void parameter_msgpack_write_subtree(const parameter_namespace_t *ns,
 
     parameter_namespace_t *child;
     parameter_t *param;
-    bool success;
+    bool success = true;
 
     for (child = ns->subspaces; child != NULL; child = child->next) {
         map_size ++;
@@ -435,12 +435,19 @@ static void parameter_msgpack_write_subtree(const parameter_namespace_t *ns,
         }
     }
 
-    cmp_write_map(cmp, map_size);
+    success &= cmp_write_map(cmp, map_size);
 
     /* Write subtrees. */
     for (child = ns->subspaces; child != NULL; child = child->next) {
-        cmp_write_str(cmp, child->id, strlen(child->id));
-        parameter_msgpack_write_subtree(child, cmp, err_cb, err_arg);
+        success &= cmp_write_str(cmp, child->id, strlen(child->id));
+        if (!success) {
+            err_cb(err_arg, child->id, "cmp_write failed");
+            return -1;
+        }
+        int ret = parameter_msgpack_write_subtree(child, cmp, err_cb, err_arg);
+        if (ret != 0) {
+            return -1;
+        }
     }
 
     /* Write each parameter. */
@@ -489,29 +496,33 @@ static void parameter_msgpack_write_subtree(const parameter_namespace_t *ns,
 
         if (success == false) {
             err_cb(err_arg, param->id, "cmp_write failed");
+            return -1;
         }
     }
+    return 0;
 }
 
-void parameter_msgpack_write_cmp(const parameter_namespace_t *ns,
+int parameter_msgpack_write_cmp(const parameter_namespace_t *ns,
                                  cmp_ctx_t *cmp,
                                  parameter_msgpack_err_cb err_cb,
                                  void *err_arg)
 {
     parameter_port_lock();
-    parameter_msgpack_write_subtree(ns, cmp, err_cb, err_arg);
+    int ret = parameter_msgpack_write_subtree(ns, cmp, err_cb, err_arg);
     parameter_port_unlock();
+    return ret;
 }
 
-/** Saves the given parameter tree to the given buffer as MessagePack. */
-void parameter_msgpack_write(const parameter_namespace_t *ns,
+int parameter_msgpack_write(const parameter_namespace_t *ns,
                              void *buf,
-                             size_t size,
+                             size_t *size,
                              parameter_msgpack_err_cb err_cb,
                              void *err_arg)
 {
     cmp_ctx_t cmp;
     cmp_mem_access_t mem;
-    cmp_mem_access_init(&cmp, &mem, buf, size);
-    parameter_msgpack_write_cmp(ns, &cmp, err_cb, err_arg);
+    cmp_mem_access_init(&cmp, &mem, buf, *size);
+    int ret = parameter_msgpack_write_cmp(ns, &cmp, err_cb, err_arg);
+    *size = cmp_mem_access_get_pos(&mem);
+    return ret;
 }

@@ -23,15 +23,15 @@ int parameter_msgpack_read(parameter_namespace_t *ns,
                            void *err_arg);
 
 /** Saves the given parameter tree to the given CMP context. */
-void parameter_msgpack_write_cmp(const parameter_namespace_t *ns,
+int parameter_msgpack_write_cmp(const parameter_namespace_t *ns,
                                  cmp_ctx_t *cmp,
                                  parameter_msgpack_err_cb err_cb,
                                  void *err_arg);
 
 /** Saves the given parameter tree to the given buffer as MessagePack. */
-void parameter_msgpack_write(const parameter_namespace_t *ns,
+int parameter_msgpack_write(const parameter_namespace_t *ns,
                              void *buf,
-                             size_t size,
+                             size_t *size,
                              parameter_msgpack_err_cb err_cb,
                              void *err_arg);
 #ifdef __cplusplus
