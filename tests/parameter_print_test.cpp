@@ -60,6 +60,7 @@ int printfn(void *arg, const char *fmt, ...)
     va_start(args, fmt);
     int remaining = sizeof(outbuffer) - outbuffer_pos;
     if (remaining < 0) {
+        va_end(args);
         return 0;
     }
     outbuffer_pos += vsnprintf(&outbuffer[outbuffer_pos], remaining, fmt, args);
