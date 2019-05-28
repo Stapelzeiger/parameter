@@ -181,14 +181,15 @@ static int read_parameter_vector(parameter_t *p,
             if (ret != 0) {
                 return ret;
             }
-        }
-        int ret = get_vector(cmp, buf, array_size, err_cb, err_arg, p->id);
-        if (ret != 0) {
+        } else {
+            int ret = get_vector(cmp, buf, array_size, err_cb, err_arg, p->id);
+            if (ret != 0) {
+                parameter_port_buffer_free(buf);
+                return ret;
+            }
+            parameter_vector_set(p, buf);
             parameter_port_buffer_free(buf);
-            return ret;
         }
-        parameter_vector_set(p, buf);
-        parameter_port_buffer_free(buf);
     } else {
         err_cb(err_arg, p->id, "warning: type mismatch");
         int ret = discard_msgpack_element(obj, cmp, err_cb, err_arg, p->id);
@@ -221,14 +222,15 @@ static int read_parameter_var_vector(parameter_t *p,
             if (ret != 0) {
                 return ret;
             }
-        }
-        int ret = get_vector(cmp, buf, array_size, err_cb, err_arg, p->id);
-        if (ret != 0) {
+        } else {
+            int ret = get_vector(cmp, buf, array_size, err_cb, err_arg, p->id);
+            if (ret != 0) {
+                parameter_port_buffer_free(buf);
+                return ret;
+            }
+            parameter_variable_vector_set(p, buf, array_size);
             parameter_port_buffer_free(buf);
-            return ret;
         }
-        parameter_variable_vector_set(p, buf, array_size);
-        parameter_port_buffer_free(buf);
     } else {
         err_cb(err_arg, p->id, "warning: type mismatch");
         int ret = discard_msgpack_element(obj, cmp, err_cb, err_arg, p->id);
